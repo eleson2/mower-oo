@@ -10,16 +10,23 @@
 class Wheel {
 private:
    Motor* _motor;         // Motor driver (L298, etc.) - composition!
-   int  TargetSpeed;
-   int  CurSpeed;
-   int  SpeedIncrement;
+   int  TargetSpeed;     // integer speed (-1023..+1023)
+   int  CurSpeed;        // integer speed currently applied
+   // Fixed-point accumulator for smooth interpolation
+   // SCALE = 1024 chosen to be cheap on small MCUs (power of two)
+   static const int SCALE = 1024;
+   int32_t cur_acc;      // CurSpeed * SCALE
+   int32_t target_acc;   // TargetSpeed * SCALE
+   int32_t step_acc;     // per-iteration increment in accumulator units
 
 public:
    // Constructor - takes a motor driver as parameter (dependency injection)
    Wheel(Motor* motor) : _motor(motor) {
       CurSpeed = 0;
       TargetSpeed = 0;
-      SpeedIncrement = 0;
+      cur_acc = 0;
+      target_acc = 0;
+      step_acc = 0;
       if (_motor) {
          _motor->reset();
       }
@@ -27,14 +34,25 @@ public:
 
    // Emit interpolated speed
    void EmitNewSpeed() {
-      CurSpeed += SpeedIncrement;
-      if (_motor) {
-         _motor->move(CurSpeed);
+      // advance accumulator and compute integer speed
+      cur_acc += step_acc;
+      int newSpeed = (int)((cur_acc + (SCALE/2)) / SCALE); // rounding
+      // Only update motor if changed
+      if (newSpeed != CurSpeed) {
+         CurSpeed = newSpeed;
+         if (_motor) {
+            _motor->move(CurSpeed);
+         }
       }
    };
 
    // Emit target speed (skip interpolation)
    void EmitTargetSpeed() {
+      // force exact target
+      CurSpeed = TargetSpeed;
+      cur_acc = (int32_t)CurSpeed * SCALE;
+      target_acc = (int32_t)TargetSpeed * SCALE;
+      step_acc = 0;
       if (_motor) {
          _motor->move(TargetSpeed);
       }
@@ -43,10 +61,20 @@ public:
    // Set target speed with number of interpolation steps
    void setWheelSpeed(int Speed, int iterations) {
       TargetSpeed = Speed;
-      SpeedIncrement = (TargetSpeed - CurSpeed) / iterations;  // Fixed: was backwards!
+      // Prepare fixed-point accumulator values
+      target_acc = (int32_t)TargetSpeed * SCALE;
+      cur_acc = (int32_t)CurSpeed * SCALE;
 
-      DEBUG_PRINT("SpeedIncr: ");
-      DEBUG_PRINT(SpeedIncrement);
+      if (iterations <= 1) iterations = 2;
+      step_acc = (target_acc - cur_acc) / iterations;  // scaled increment per tick
+
+      // If step_acc is zero due to small delta/large SCALE, fall back to at least move by 1 LSB
+      if (step_acc == 0 && target_acc != cur_acc) {
+         step_acc = (target_acc > cur_acc) ? 1 : -1;
+      }
+
+      DEBUG_PRINT("StepAcc: ");
+      DEBUG_PRINT(step_acc);
       DEBUG_PRINT("   Iter: ");
       DEBUG_PRINTLN(iterations);
    };
@@ -61,7 +89,9 @@ public:
    void reset() {
       CurSpeed = 0;
       TargetSpeed = 0;
-      SpeedIncrement = 0;
+      cur_acc = 0;
+      target_acc = 0;
+      step_acc = 0;
       if (_motor) {
          _motor->reset();
       }
@@ -71,7 +101,9 @@ public:
    void stop() {
       CurSpeed = 0;
       TargetSpeed = 0;
-      SpeedIncrement = 0;
+      cur_acc = 0;
+      target_acc = 0;
+      step_acc = 0;
       if (_motor) {
          _motor->stop();
       }
