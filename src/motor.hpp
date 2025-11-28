@@ -22,7 +22,7 @@
 class Motor {
    public:
       Motor() {};
-      ~Motor() { };
+      virtual ~Motor() {};
 
       /**
        * Move the motor at specified speed and direction
