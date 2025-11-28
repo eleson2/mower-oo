@@ -1,0 +1,93 @@
+#include <Arduino.h>
+#include <sensorSonar.h> 
+#include <TaskSchedulerDeclarations.h>
+#include <YetAnotherPcInt.h>
+
+ 
+sSonar::sSonar(Scheduler* aS, unsigned int timeOut, 
+               uint8_t trigger_pin, uint8_t _response_pin) 
+          : Task(1,timeOut, aS, false) {
+
+   TriggerPin  = trigger_pin;
+   ResponsePin = _response_pin;
+
+   pinMode(TriggerPin, OUTPUT);
+   pinMode(ResponsePin, INPUT);
+
+   _responseStartMicros = 0;
+   SonarDistance = 0;
+   
+};
+
+sSonar::~sSonar(){ }; 
+
+void sSonar::Measure() {
+   SonarDistance = 0; 
+	PcInt::detachInterrupt(ResponsePin);
+
+	digitalWrite(TriggerPin, LOW);
+	delayMicroseconds(4);
+	digitalWrite(TriggerPin, HIGH);
+	delayMicroseconds(10);
+	digitalWrite(TriggerPin, LOW);
+	delayMicroseconds(4);
+
+	PcInt::attachInterrupt(ResponsePin, responseStart, this, RISING);
+   return;
+};
+
+
+bool sSonar::Callback() { 
+
+   if (SonarDistance == 0) return true; 
+
+   lastSonarDistance = SonarDistance;
+   // lastSonarDistanceMM = GetMeasureMM();
+   //PRINT(lastSonarDistanceMM);
+   Measure();
+   return true;
+};
+
+bool sSonar::OnEnable() { 
+   Measure();
+   return true;
+};
+
+void sSonar::OnDisable() { 
+   restartDelayed(2);
+   return;
+};
+
+void sSonar::Stop() {
+   PcInt::detachInterrupt(ResponsePin);
+   disable();
+};
+
+unsigned int sSonar::GetMeasure() { return SonarDistance ; };
+
+unsigned int sSonar::GetLastMeasure() { return SonarDistance ; };
+
+unsigned int sSonar::GetLastMeasureMM() { 
+    return lastSonarDistance * 128 / _soundSpeedFactor; 
+};
+
+// void sSonar::SetTemperatureCorrection(int8_t tempCelsius) { 
+//     _soundSpeedFactor = 2560000 / (3310 + 6 * tempCelsius); 
+// };
+
+
+//
+// Static interupt handlers
+void sSonar::responseStart(sSonar *_this) {
+   PcInt::detachInterrupt(_this->ResponsePin);
+   _this->_responseStartMicros = micros();
+   PcInt::attachInterrupt(_this->ResponsePin, responseEnd, _this, FALLING);
+};
+
+// Static interupt handlers
+void sSonar::responseEnd(sSonar *_this) {
+   PcInt::detachInterrupt(_this->ResponsePin);
+   _this->SonarDistance = micros() - _this->_responseStartMicros;
+
+   // _this->restartDelayed(2);
+};

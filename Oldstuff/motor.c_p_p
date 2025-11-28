@@ -1,0 +1,50 @@
+#include "Motor.hpp"
+
+Motor::Motor() {
+   _pwmVal = 0;
+   _speed = 0;
+   _pinIN1 = 0;
+   _pinIN2 = 0;
+   _pinPwmOut = 0;
+};
+
+Motor::Motor(byte pinPWM, byte pinIN1, byte pinIN2) {
+   Serial.begin();
+
+   Serial.println("IniYYYYYYY");
+
+   _pwmVal = 0;
+   _speed = 0;
+};
+
+void Motor::setPins(byte pinPWM, byte pinIN1, byte pinIN2) {
+   Serial.println("Setting pinmode");
+};
+
+int Motor::getSpeed() {
+   return _pwmVal;
+};
+
+void Motor::move(int S) {
+   _speed = S;
+   Serial.print("Mv: ");
+   Serial.println(S);
+
+   _pwmVal = map(S,0,1023,0,255);
+   Serial.print("Mapped: ");
+   Serial.println(_pwmVal);
+};
+
+void Motor::stop() {
+   //Disable
+   Serial.println("Stop");
+};
+
+void Motor::reset() {
+   Serial.println("MotasdadS");
+   _speed = 0;
+   _pwmVal = map(0 ,0,1023,0,255);
+   
+   Serial.print("Mapped: ");
+   Serial.println(_pwmVal);
+};

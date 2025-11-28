@@ -1,0 +1,86 @@
+#ifndef _LINE_FOLLOWER_H
+#define _LINE_FOLLOWER_H
+
+#include "globals.hpp"
+#include "GPSInterface.h"
+#include "IMUInterface.h"
+#include "driveunit.h"
+#include <TaskSchedulerDeclarations.h>
+
+// Line Following Controller
+// Smoothly guides mower along a line from point A to point B
+class LineFollower : public Task {
+private:
+    // Line definition
+    Point2D _startPoint;
+    Point2D _endPoint;
+    bool _lineSet;
+
+    // Sensor references
+    GPSInterface* _gps;
+    IMUInterface* _imu;
+    DriveUnit* _drive;
+
+    // Current state
+    Point2D _currentPosition;
+    float _currentHeading;  // degrees
+
+    // Controller parameters (tunable)
+    float _K_crossTrack;      // Cross-track error gain
+    float _K_heading;         // Heading error gain
+    float _lookaheadDistance; // Look-ahead distance in meters
+    wheelSpeed _baseSpeed;    // Forward speed
+
+    // Completion detection
+    float _completionThreshold; // Distance to endpoint to consider "done"
+    bool _lineComplete;
+
+    // Helper functions
+    float calculateCrossTrackError();
+    float calculateHeadingError();
+    Point2D calculateNearestPointOnLine();
+    Point2D calculateLookAheadPoint();
+    float calculateDistanceToEnd();
+    float normalizeAngle(float angle);
+    float calculateBearing(const Point2D& from, const Point2D& to);
+
+public:
+    // Constructor
+    LineFollower(Scheduler* aS, GPSInterface* gps, IMUInterface* imu, DriveUnit* drive);
+    ~LineFollower();
+
+    // Set the line to follow
+    void setLine(Point2D start, Point2D end);
+
+    // Set controller parameters
+    void setCrossTrackGain(float gain) { _K_crossTrack = gain; }
+    void setHeadingGain(float gain) { _K_heading = gain; }
+    void setLookaheadDistance(float distance) { _lookaheadDistance = distance; }
+    void setBaseSpeed(wheelSpeed speed) { _baseSpeed = speed; }
+    void setCompletionThreshold(float threshold) { _completionThreshold = threshold; }
+
+    // Get controller parameters
+    float getCrossTrackGain() const { return _K_crossTrack; }
+    float getHeadingGain() const { return _K_heading; }
+    float getLookaheadDistance() const { return _lookaheadDistance; }
+    wheelSpeed getBaseSpeed() const { return _baseSpeed; }
+
+    // Update position and heading from sensors
+    void updateSensors();
+
+    // Check if line following is complete
+    bool isComplete() const { return _lineComplete; }
+
+    // Get current cross-track error (for monitoring)
+    float getCrossTrackError() { return calculateCrossTrackError(); }
+
+    // Reset state
+    void reset();
+
+    // Task callbacks
+    bool Callback() override;
+    bool OnEnable() override;
+    void OnDisable() override;
+};
+
+#endif

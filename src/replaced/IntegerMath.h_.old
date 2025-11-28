@@ -1,0 +1,165 @@
+#ifndef INTEGERMATH_H
+#define INTEGERMATH_H
+
+#include "globals.hpp"
+
+// Integer-only math functions for navigation
+// No floating point!
+
+// Integer atan2 - returns angle in tenths of degrees (0-3599)
+// Uses CORDIC-like algorithm or lookup table
+inline angle_t atan2_int(int32_t y, int32_t x) {
+    // Handle special cases
+    if (x == 0 && y == 0) return 0;
+
+    // Determine quadrant and use symmetry
+    bool negX = x < 0;
+    bool negY = y < 0;
+
+    // Work with absolute values
+    int32_t absX = negX ? -x : x;
+    int32_t absY = negY ? -y : y;
+
+    angle_t angle;
+
+    // Use approximation: atan(y/x) ≈ y/(x + 0.28125*y) for small angles
+    // For better accuracy, use lookup table or CORDIC
+
+    // Simple octant-based approximation
+    if (absY <= absX) {
+        // Angle is close to 0° or 180°
+        // atan(absY/absX) for absY/absX in [0, 1]
+        // Approximation: angle ≈ absY * 450 / absX (in tenths of degrees)
+        if (absX > 0) {
+            angle = (angle_t)(((int64_t)absY * 450) / absX);
+        } else {
+            angle = 0;
+        }
+    } else {
+        // Angle is close to 90° or 270°
+        // atan(absY/absX) = 90° - atan(absX/absY)
+        if (absY > 0) {
+            angle = 900 - (angle_t)(((int64_t)absX * 450) / absY);
+        } else {
+            angle = 900;
+        }
+    }
+
+    // Adjust for quadrant
+    if (!negX && !negY) {
+        // Quadrant 1 (0° - 90°)
+        return angle;
+    } else if (negX && !negY) {
+        // Quadrant 2 (90° - 180°)
+        return 1800 - angle;
+    } else if (negX && negY) {
+        // Quadrant 3 (180° - 270°)
+        return 1800 + angle;
+    } else {
+        // Quadrant 4 (270° - 360°)
+        return 3600 - angle;
+    }
+}
+
+// Normalize angle to 0-3599 range
+inline angle_t normalizeAngle(angle_t angle) {
+    while (angle >= ANGLE_360) angle -= ANGLE_360;
+    while (angle < 0) angle += ANGLE_360;
+    return angle;
+}
+
+// Calculate angle difference (shortest path)
+// Returns signed angle in tenths of degrees (-1800 to +1800)
+inline int16_t angleDifference(angle_t target, angle_t current) {
+    int16_t diff = target - current;
+
+    // Normalize to ±180° (±1800 tenths)
+    while (diff > ANGLE_180) diff -= ANGLE_360;
+    while (diff < -ANGLE_180) diff += ANGLE_360;
+
+    return diff;
+}
+
+// Integer sine approximation (input: tenths of degrees, output: scaled by 1000)
+// sin(angle) * 1000, so sin(90°) = 1000
+inline int16_t sin_int(angle_t angle) {
+    // Normalize to 0-3599
+    angle = normalizeAngle(angle);
+
+    // Use symmetry to reduce to 0-900 (0-90°)
+    bool negate = false;
+    if (angle >= 1800) {  // 180-360°
+        angle -= 1800;
+        negate = true;
+    }
+    if (angle > 900) {  // 90-180°
+        angle = 1800 - angle;
+    }
+
+    // Polynomial approximation for 0-90°
+    // sin(x) ≈ x - x³/6 for small x (in radians)
+    // For degrees: convert and use lookup or polynomial
+
+    // Simple linear approximation for now (good enough for many cases)
+    // sin(0-90°) ≈ angle / 90 * 1000
+    int16_t result = (int16_t)((int32_t)angle * 1000 / 900);
+
+    return negate ? -result : result;
+}
+
+// Integer cosine approximation
+inline int16_t cos_int(angle_t angle) {
+    return sin_int(angle + 900);  // cos(x) = sin(x + 90°)
+}
+
+// Lookup table for sine at 45° increments (×1000 for integer precision)
+// Indices: 0=0°, 1=45°, 2=90°, 3=135°, 4=180°, 5=225°, 6=270°, 7=315°
+const int16_t SIN_LOOKUP_45[] PROGMEM = {
+    0,      // 0°   (sin(0°) = 0.000)
+    707,    // 45°  (sin(45°) ≈ 0.707)
+    1000,   // 90°  (sin(90°) = 1.000)
+    707,    // 135° (sin(135°) ≈ 0.707)
+    0,      // 180° (sin(180°) = 0.000)
+    -707,   // 225° (sin(225°) ≈ -0.707)
+    -1000,  // 270° (sin(270°) = -1.000)
+    -707    // 315° (sin(315°) ≈ -0.707)
+};
+
+const int16_t COS_LOOKUP_45[] PROGMEM = {
+    1000,   // 0°   (cos(0°) = 1.000)
+    707,    // 45°  (cos(45°) ≈ 0.707)
+    0,      // 90°  (cos(90°) = 0.000)
+    -707,   // 135° (cos(135°) ≈ -0.707)
+    -1000,  // 180° (cos(180°) = -1.000)
+    -707,   // 225° (cos(225°) ≈ -0.707)
+    0,      // 270° (cos(270°) = 0.000)
+    707     // 315° (cos(315°) ≈ 0.707)
+};
+
+// Accurate sine using 45° lookup table
+inline int16_t sin_lookup(angle_t angle) {
+    // Normalize to 0-3599
+    angle = normalizeAngle(angle);
+
+    // Convert to degrees and find nearest 45° increment
+    int degrees = ANGLE_TO_DEGREES(angle);
+    int index = (degrees + 22) / 45;  // Round to nearest 45°
+    if (index >= 8) index = 0;
+
+    return pgm_read_word(&SIN_LOOKUP_45[index]);
+}
+
+// Accurate cosine using 45° lookup table
+inline int16_t cos_lookup(angle_t angle) {
+    // Normalize to 0-3599
+    angle = normalizeAngle(angle);
+
+    // Convert to degrees and find nearest 45° increment
+    int degrees = ANGLE_TO_DEGREES(angle);
+    int index = (degrees + 22) / 45;  // Round to nearest 45°
+    if (index >= 8) index = 0;
+
+    return pgm_read_word(&COS_LOOKUP_45[index]);
+}
+
+#endif

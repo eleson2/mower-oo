@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"g:\\projects\\mower-oo\")",
+      "Bash(pio run:*)",
+      "Bash(dir:*)",
+      "Bash(platformio run:*)",
+      "Bash(where:*)",
+      "Bash(python -m platformio:*)",
+      "Bash(/c/Users/erlan/.platformio/penv/Scripts/platformio.exe run:*)",
+      "Bash(nul)",
+      "Bash(findstr:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(mv:*)",
+      "Bash(avr-g++:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

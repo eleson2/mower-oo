@@ -1,0 +1,54 @@
+/***************************************************
+Copyright (c) 20211 Erland Lestander
+(www.luisllamas.es)
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+specific language governing permissions and limitations under the License
+****************************************************/
+
+#include "Sonar.h"
+
+Sonar::Sonar(uint8_t _trigger_pin, uint8_t _response_pin, unsigned int* _distance) { 
+   TriggerPin  = _trigger_pin;
+   ResponsePin = _response_pin;
+   Distance    = _distance;
+
+   _responseStartMicros = 0;
+      
+   pinMode(_trigger_pin, OUTPUT);
+   pinMode(_response_pin, INPUT);
+};
+
+void Sonar::Stop() {
+   PcInt::detachInterrupt(TriggerPin);
+   PcInt::detachInterrupt(ResponsePin);
+};
+
+void Sonar::responseStart(Sonar *_this) {
+   PcInt::detachInterrupt(_this->ResponsePin);
+   _this->_responseStartMicros = micros();
+   PcInt::attachInterrupt(_this->ResponsePin, responseEnd, _this, FALLING);
+};
+
+void Sonar::responseEnd(Sonar *_this) {
+   PcInt::detachInterrupt(_this->ResponsePin);
+   *_this->Distance = micros() - _this->_responseStartMicros; 
+};
+
+void Sonar::Measure() {
+   *Distance = 0; 
+	PcInt::detachInterrupt(ResponsePin);
+
+	digitalWrite(TriggerPin, LOW);
+	delayMicroseconds(4);
+	digitalWrite(TriggerPin, HIGH);
+	delayMicroseconds(10);
+	digitalWrite(TriggerPin, LOW);
+	delayMicroseconds(4);
+
+	PcInt::attachInterrupt(ResponsePin, responseStart, this, RISING);
+};

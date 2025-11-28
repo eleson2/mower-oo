@@ -1,0 +1,48 @@
+#ifndef _Wheel_h
+#define _Wheel_h
+
+#include "globals.hpp"
+#include "Arduino.h"
+#include "L298.h"
+
+class Wheel { 
+private: 
+   int  TargetSpeed;
+   int  CurSpeed;
+   int  SpeedIncrement; 
+   L298 m;
+
+public:
+
+   Wheel(uint8_t _enable,uint8_t _IN1, uint8_t _IN2) {
+      CurSpeed = 0;
+      TargetSpeed = 0;
+      SpeedIncrement = 0;
+
+      // reset();
+   }; 
+
+   void EmitNewSpeed() {
+   Serial.print("W_EmitNewSpeed: ");
+   Serial.println(CurSpeed);
+      CurSpeed += SpeedIncrement;
+      int spd = (CurSpeed >> 5); // (7 - 2 ) 
+      m.move(spd);
+      Serial.println(spd);
+   };
+
+   void EmitTargetSpeed() {
+      m.move(TargetSpeed>>5); 
+   };
+
+   void setWheelSpeed(int Speed, int iterations) {
+      TargetSpeed = Speed;
+      SpeedIncrement = (CurSpeed - TargetSpeed)/iterations;
+   
+   Serial.print("SpeedIncr: ");
+   Serial.print(SpeedIncrement); 
+   Serial.print("   Iter: ");
+   Serial.println(iterations); 
+   };
+}; 
+#endif

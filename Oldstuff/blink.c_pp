@@ -1,0 +1,22 @@
+#include <Arduino.h>
+#include <blink.h>
+
+BlinkTask::BlinkTask(Scheduler* aS, unsigned int mSec) 
+          : Task(mSec,TASK_FOREVER,aS,false) {
+};
+
+BlinkTask::~BlinkTask(){}; 
+
+bool BlinkTask::Callback() { 
+    digitalWrite(13,LED);
+    LED = 1 - LED;
+    return true;
+};
+
+bool BlinkTask::OnEnable() { 
+    pinMode(13,OUTPUT);
+    return true; 
+};
+void BlinkTask::OnDisable() { 
+
+};

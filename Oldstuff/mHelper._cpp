@@ -1,0 +1,14 @@
+#include <mHelper.h>
+
+void mHelper::InitHelper(int SchedTicks) {
+    _schedticks = SchedTicks;
+}
+
+
+void mHelper::SetTargetSpeed (int LSpeed, int RSpeed, int mSec) {
+   int i = mSec / 3; // SchedTicks;
+   if (i<=0) i=1;
+   /* leftWheel.setTargetSpeed(LSpeed,i);
+   rightWheel.setTargetSpeed(RSpeed,i); 
+   SetDuration(mSec); */
+};

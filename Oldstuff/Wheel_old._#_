@@ -1,0 +1,22 @@
+#ifndef _Wheel_h
+#define _Wheel_h
+
+#include "globals.h"
+#include "Arduino.h"
+#include "L29.h"
+
+class Wheel : public L29 { 
+private: 
+  int  TargetSpeed;
+  int  CurSpeed;
+  int  SpeedIncrement; 
+
+public:
+  Wheel();
+  Wheel(uint8_t _enable,uint8_t _IN1, uint8_t _IN2) ;
+
+
+  void EmitNewSpeed(); 
+  void setWheelSpeed( int Speed, int iterations);
+};
+#endif

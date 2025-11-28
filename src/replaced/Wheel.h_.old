@@ -1,0 +1,42 @@
+#ifndef WHEEL_H
+#define WHEEL_H
+
+#include "globals.hpp"
+#include "Arduino.h"
+#include "L298.h"
+
+class Wheel : L298 {
+private:
+   int _targetSpeed;
+   int _currentSpeed;
+   int _speedIncrement;
+
+public:
+   Wheel(uint8_t enable, uint8_t in1, uint8_t in2) :
+      L298(enable, in1, in2) {
+      _currentSpeed = 0;
+      _targetSpeed = 0;
+      _speedIncrement = 0;
+      reset();
+   }
+
+   void emitNewSpeed() {
+      _currentSpeed += _speedIncrement;
+      move(_currentSpeed);
+   }
+
+   void emitTargetSpeed() {
+      move(_targetSpeed);
+   }
+
+   void setWheelSpeed(int speed, int iterations) {
+      _targetSpeed = speed;
+      _speedIncrement = (_targetSpeed - _currentSpeed) / iterations;  // FIXED: was backwards!
+
+      DEBUG_PRINT("SpeedIncr: ");
+      DEBUG_PRINT(_speedIncrement);
+      DEBUG_PRINT("   Iter: ");
+      DEBUG_PRINTLN(iterations);
+   }
+};
+#endif

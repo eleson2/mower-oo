@@ -1,0 +1,372 @@
+#ifndef _IMU_INTERFACE_H
+#define _IMU_INTERFACE_H
+
+#include "Arduino.h"
+
+// ICM-20948 I2C addresses
+#define ICM20948_ADDR_AD0_LOW   0x68  // AD0 pin = LOW
+#define ICM20948_ADDR_AD0_HIGH  0x69  // AD0 pin = HIGH (default)
+#define ICM20948_ADDR           ICM20948_ADDR_AD0_HIGH
+
+// ICM-20948 Register Banks
+#define ICM20948_REG_BANK_SEL   0x7F
+
+// Bank 0 Registers
+#define ICM20948_WHO_AM_I       0x00
+#define ICM20948_PWR_MGMT_1     0x06
+#define ICM20948_PWR_MGMT_2     0x07
+#define ICM20948_ACCEL_XOUT_H   0x2D
+#define ICM20948_GYRO_XOUT_H    0x33
+
+// Bank 2 Registers
+#define ICM20948_GYRO_CONFIG_1  0x01
+#define ICM20948_ACCEL_CONFIG   0x14
+
+// Magnetometer (AK09916) - accessed via I2C master interface
+#define AK09916_I2C_ADDR        0x0C
+#define AK09916_WHO_AM_I        0x01
+#define AK09916_STATUS_1        0x10
+#define AK09916_MAG_XOUT_L      0x11
+#define AK09916_CONTROL_2       0x31
+#define AK09916_CONTROL_3       0x32
+
+// IMU Interface for ICM-20948
+// 9-axis sensor: 3-axis gyro + 3-axis accelerometer + 3-axis magnetometer
+// Superior to MPU6050 with better accuracy and built-in magnetometer
+class IMUInterface {
+private:
+    float _currentHeading;        // Current heading in degrees (0-360)
+    float _headingOffset;         // Calibration offset
+    unsigned long _lastUpdate;    // Last update time
+    bool _initialized;
+    bool _magnetometerEnabled;    // ICM-20948 has built-in magnetometer
+
+    // Gyro drift compensation
+    float _gyroBiasX;
+    float _gyroBiasY;
+    float _gyroBiasZ;
+
+    // Magnetometer calibration (hard iron offset)
+    float _magOffsetX;
+    float _magOffsetY;
+    float _magOffsetZ;
+
+    // Select register bank (ICM-20948 uses bank switching)
+    void selectBank(uint8_t bank) {
+        // TODO: Implement bank selection
+        /*
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_REG_BANK_SEL);
+        Wire.write(bank << 4);
+        Wire.endTransmission(true);
+        */
+    }
+
+public:
+    IMUInterface() : _currentHeading(0), _headingOffset(0),
+                     _lastUpdate(0), _initialized(false),
+                     _magnetometerEnabled(false),
+                     _gyroBiasX(0), _gyroBiasY(0), _gyroBiasZ(0),
+                     _magOffsetX(0), _magOffsetY(0), _magOffsetZ(0) {}
+
+    // Initialize ICM-20948
+    void begin(bool useMagnetometer = true) {
+        // TODO: Initialize actual ICM-20948 via I2C
+        /*
+        Wire.begin();
+
+        // Select Bank 0
+        selectBank(0);
+
+        // Wake up ICM-20948
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_PWR_MGMT_1);
+        Wire.write(0x01);  // Auto select clock source
+        Wire.endTransmission(true);
+        delay(30);
+
+        // Enable accelerometer and gyroscope
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_PWR_MGMT_2);
+        Wire.write(0x00);  // Enable all sensors
+        Wire.endTransmission(true);
+        delay(10);
+
+        // Select Bank 2
+        selectBank(2);
+
+        // Configure gyroscope (±250°/s for precise heading tracking)
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_GYRO_CONFIG_1);
+        Wire.write(0x01);  // ±250 dps, DLPF enabled
+        Wire.endTransmission(true);
+
+        // Configure accelerometer (±2g)
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_ACCEL_CONFIG);
+        Wire.write(0x01);  // ±2g, DLPF enabled
+        Wire.endTransmission(true);
+
+        // Return to Bank 0
+        selectBank(0);
+
+        // Initialize magnetometer if requested
+        if (useMagnetometer) {
+            // TODO: Enable I2C master and configure AK09916 magnetometer
+            // This requires more complex setup via ICM-20948's I2C master interface
+            _magnetometerEnabled = true;
+        }
+        */
+
+        _magnetometerEnabled = useMagnetometer;
+        _initialized = true;
+        _lastUpdate = millis();
+    }
+
+    // Calibrate gyro (measure bias when stationary)
+    void calibrate(int samples = 200) {
+        if (!_initialized) return;
+
+        // TODO: Read actual gyro and calculate average bias
+        /*
+        float sumX = 0, sumY = 0, sumZ = 0;
+
+        selectBank(0);
+
+        for (int i = 0; i < samples; i++) {
+            Wire.beginTransmission(ICM20948_ADDR);
+            Wire.write(ICM20948_GYRO_XOUT_H);
+            Wire.endTransmission(false);
+            Wire.requestFrom(ICM20948_ADDR, 6, true);
+
+            int16_t gyroX = Wire.read() << 8 | Wire.read();
+            int16_t gyroY = Wire.read() << 8 | Wire.read();
+            int16_t gyroZ = Wire.read() << 8 | Wire.read();
+
+            sumX += gyroX;
+            sumY += gyroY;
+            sumZ += gyroZ;
+
+            delay(5);
+        }
+
+        _gyroBiasX = sumX / samples;
+        _gyroBiasY = sumY / samples;
+        _gyroBiasZ = sumZ / samples;
+        */
+
+        // Stub: assume no bias
+        _gyroBiasX = 0;
+        _gyroBiasY = 0;
+        _gyroBiasZ = 0;
+    }
+
+    // Calibrate magnetometer (for accurate compass heading)
+    void calibrateMagnetometer(int samples = 100) {
+        if (!_initialized || !_magnetometerEnabled) return;
+
+        // TODO: Implement magnetometer calibration
+        // Typically requires rotating sensor through full 360° in each axis
+        // to find min/max values (hard iron calibration)
+
+        _magOffsetX = 0;
+        _magOffsetY = 0;
+        _magOffsetZ = 0;
+    }
+
+    // Update heading from gyro (call frequently, e.g., 50-100Hz)
+    void update() {
+        if (!_initialized) return;
+
+        unsigned long currentTime = millis();
+        float deltaTime = (currentTime - _lastUpdate) / 1000.0f;  // Convert to seconds
+        _lastUpdate = currentTime;
+
+        // TODO: Read actual gyro Z-axis rate
+        /*
+        selectBank(0);
+
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_GYRO_XOUT_H);
+        Wire.endTransmission(false);
+        Wire.requestFrom(ICM20948_ADDR, 6, true);
+
+        int16_t gyroX = Wire.read() << 8 | Wire.read();
+        int16_t gyroY = Wire.read() << 8 | Wire.read();
+        int16_t gyroZ = Wire.read() << 8 | Wire.read();
+
+        // Convert to degrees/sec (131 LSB/(°/s) for ±250°/s range)
+        float gyroRateZ = ((gyroZ - _gyroBiasZ) / 131.0f);
+
+        // Integrate to get heading
+        _currentHeading += gyroRateZ * deltaTime;
+        */
+
+        // Stub: heading doesn't change without real sensor
+        // In actual use, heading integrates gyro rate over time
+
+        // Normalize to 0-360 range
+        while (_currentHeading >= 360.0f) _currentHeading -= 360.0f;
+        while (_currentHeading < 0.0f) _currentHeading += 360.0f;
+    }
+
+    // Update heading from magnetometer (compass - absolute heading)
+    // This corrects gyro drift and provides true north reference
+    void updateFromMagnetometer() {
+        if (!_initialized || !_magnetometerEnabled) return;
+
+        // TODO: Read magnetometer and calculate heading
+        /*
+        // Read magnetometer via I2C master interface
+        // (Complex setup required - see ICM-20948 datasheet)
+
+        // Get raw magnetometer values
+        int16_t magX, magY, magZ;
+        // ... read from AK09916 ...
+
+        // Apply calibration (hard iron offset)
+        float mx = (magX - _magOffsetX);
+        float my = (magY - _magOffsetY);
+        float mz = (magZ - _magOffsetZ);
+
+        // Calculate heading (tilt-compensated if using accelerometer)
+        // For flat surface (no tilt):
+        float heading = atan2(my, mx) * RAD_TO_DEG;
+
+        // Convert to 0-360 range
+        if (heading < 0) heading += 360.0f;
+
+        // Update current heading (blend with gyro or replace)
+        _currentHeading = heading + _headingOffset;
+        */
+    }
+
+    // Get current heading in degrees (0-360, 0=North, 90=East)
+    float getHeading() const {
+        return _currentHeading;
+    }
+
+    // Get current heading in radians
+    float getHeadingRadians() const {
+        return _currentHeading * DEG_TO_RAD;
+    }
+
+    // Set heading manually (for calibration or GPS-based correction)
+    void setHeading(float heading) {
+        _currentHeading = heading;
+        while (_currentHeading >= 360.0f) _currentHeading -= 360.0f;
+        while (_currentHeading < 0.0f) _currentHeading += 360.0f;
+    }
+
+    // Reset heading to zero
+    void resetHeading() {
+        _currentHeading = 0;
+        _headingOffset = 0;
+    }
+
+    // Set calibration offset
+    void setOffset(float offset) {
+        _headingOffset = offset;
+    }
+
+    // Check if initialized
+    bool isInitialized() const {
+        return _initialized;
+    }
+
+    // Check if magnetometer is enabled
+    bool hasMagnetometer() const {
+        return _magnetometerEnabled;
+    }
+
+    // Stub: Set heading manually for testing
+    void setHeadingStub(float heading) {
+        setHeading(heading);
+    }
+
+    // Get accelerometer data (useful for tilt compensation)
+    // Returns acceleration in g's
+    void getAcceleration(float& x, float& y, float& z) {
+        // TODO: Read actual accelerometer
+        /*
+        selectBank(0);
+
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_ACCEL_XOUT_H);
+        Wire.endTransmission(false);
+        Wire.requestFrom(ICM20948_ADDR, 6, true);
+
+        int16_t accelX = Wire.read() << 8 | Wire.read();
+        int16_t accelY = Wire.read() << 8 | Wire.read();
+        int16_t accelZ = Wire.read() << 8 | Wire.read();
+
+        // Convert to g's (16384 LSB/g for ±2g range)
+        x = accelX / 16384.0f;
+        y = accelY / 16384.0f;
+        z = accelZ / 16384.0f;
+        */
+
+        // Stub values
+        x = 0.0f;
+        y = 0.0f;
+        z = 1.0f;  // 1g downward when level
+    }
+
+    // Get magnetometer data (raw)
+    // Returns magnetic field in µT (microTesla)
+    void getMagnetometer(float& x, float& y, float& z) {
+        if (!_magnetometerEnabled) {
+            x = y = z = 0.0f;
+            return;
+        }
+
+        // TODO: Read actual magnetometer
+        /*
+        // Read from AK09916 via I2C master
+        // ... complex setup required ...
+
+        int16_t magX, magY, magZ;
+        // ... read values ...
+
+        // Convert to µT (0.15 µT/LSB for AK09916)
+        x = magX * 0.15f;
+        y = magY * 0.15f;
+        z = magZ * 0.15f;
+        */
+
+        // Stub values (pointing north)
+        x = 0.0f;
+        y = 50.0f;  // ~50µT typical Earth's magnetic field
+        z = 0.0f;
+    }
+
+    // Get gyroscope data (raw angular rates)
+    // Returns rotation rate in degrees/second
+    void getGyroscope(float& x, float& y, float& z) {
+        // TODO: Read actual gyroscope
+        /*
+        selectBank(0);
+
+        Wire.beginTransmission(ICM20948_ADDR);
+        Wire.write(ICM20948_GYRO_XOUT_H);
+        Wire.endTransmission(false);
+        Wire.requestFrom(ICM20948_ADDR, 6, true);
+
+        int16_t gyroX = Wire.read() << 8 | Wire.read();
+        int16_t gyroY = Wire.read() << 8 | Wire.read();
+        int16_t gyroZ = Wire.read() << 8 | Wire.read();
+
+        // Convert to degrees/sec (131 LSB/(°/s) for ±250°/s)
+        x = (gyroX - _gyroBiasX) / 131.0f;
+        y = (gyroY - _gyroBiasY) / 131.0f;
+        z = (gyroZ - _gyroBiasZ) / 131.0f;
+        */
+
+        // Stub values
+        x = 0.0f;
+        y = 0.0f;
+        z = 0.0f;
+    }
+};
+
+#endif

@@ -1,0 +1,28 @@
+#ifndef MOTOR_SIM_h
+#define MOTOR_SIM_h
+
+#include "Arduino.h"
+#include "motor.hpp"
+
+class MotorSim : public Motor  {
+//From motor interface
+public:
+   // constructor
+   MotorSim();
+   MotorSim(byte pinEnable, byte pinIN1, byte pinIN2);
+
+   void setPins(byte pinPWM, byte pinIN1, byte pinIN2);
+
+   void move(int Speed) override;
+   void stop()          override;
+   void reset()         override;
+   int  getSpeed()      override;
+
+private:
+   byte _pinPwmOut;
+   byte _pinIN1;
+   byte _pinIN2;
+   int   _speed;
+   byte _pwmVal;
+};
+#endif

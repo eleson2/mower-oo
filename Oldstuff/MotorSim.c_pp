@@ -1,0 +1,50 @@
+#include "MotorSim.h"
+
+MotorSim::MotorSim() {
+   _pwmVal = 0;
+   _speed = 0;
+   _pinIN1 = 0;
+   _pinIN2 = 0;
+   _pinPwmOut = 0;
+};
+
+MotorSim::MotorSim(byte pinPWM, byte pinIN1, byte pinIN2) {
+   Serial.begin();
+
+   Serial.println("IniYYYYYYY");
+
+   _pwmVal = 0;
+   _speed = 0;
+};
+
+void MotorSim::setPins(byte pinPWM, byte pinIN1, byte pinIN2) {
+   Serial.println("Setting pinmode");
+};
+
+int MotorSim::getSpeed() {
+   return _pwmVal;
+};
+
+void MotorSim::move(int S) {
+   _speed = S;
+   Serial.print("Mv: ");
+   Serial.println(S);
+
+   _pwmVal = map(S,0,1023,0,255);
+   Serial.print("Mapped: ");
+   Serial.println(_pwmVal);
+};
+
+void MotorSim::stop() {
+   //Disable
+   Serial.println("Stop");
+};
+
+void MotorSim::reset() {
+   Serial.println("MotasdadS");
+   _speed = 0;
+   _pwmVal = map(0 ,0,1023,0,255);
+   
+   Serial.print("Mapped: ");
+   Serial.println(_pwmVal);
+};

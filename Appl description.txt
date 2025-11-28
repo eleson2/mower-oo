@@ -1,0 +1,30 @@
+Tis codebase is intended for smooth mower control 
+where it is possible to to say:
+"in 1.5 sec, Left motor shall be 
+at 50% and right motor at 80%."
+
+In that way it should be possible to
+ do arbitary curves and spirals with the intent 
+ to not introduce unnesseary  accelerations
+ and braking on a sensitive lawn
+
+
+ I don't care much for precision, 
+ In reality it will not introduce any problematic jerkiness.
+
+Explain textually on a high level how 2-4 would be implemented. 
+My idea was to implement GPS and a way to smoothly follow straight lines. 
+Also textually on a high level explain how that could be implemented.
+
+
+No thanks to dynamic trajectory for now, circles are easy to do anyways, and spiral will be quite easy as well.
+I can see the need for S-curves acceleration, but let's wait .
+Trajectory queuing is ok to do in code for now. 
+
+Let's aim for changing the straight line fiunction to follow an imaginary line
+ with start and end points. Let us for now not worry about implementing GPS and how
+  to generating that line , insterad assumne aa line has been genreated and now the 
+  mower shall connect to the line and smoothly follow it
+Assume the mower has a gyro / accelerator sensor if that helps.
+ok , please implement this. Assume most common gyro/accelerator for these kind of projects. 
+If needed ,create a stub interface for GPS

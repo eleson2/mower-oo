@@ -1,0 +1,31 @@
+#include "Wheel.h"
+
+/* Speed is in the range of -32640 - +32640
+ *  (255 << 7 ) 
+ *  Analog write sends 8-bit 
+ */
+
+Wheel::Wheel(uint8_t _enable, uint8_t _IN1, uint8_t _IN2)
+    : L29(_enable, _IN1, _IN2) {
+
+  CurSpeed = 0;
+  TargetSpeed = 0;
+  SpeedIncrement = 0;
+
+  reset();
+}; 
+
+Wheel::Wheel() {
+ 
+}; 
+
+void Wheel::setWheelSpeed( int Speed, int iterations) {
+  TargetSpeed = Speed;
+  SpeedIncrement = (CurSpeed - TargetSpeed)/iterations;
+};
+
+void Wheel::EmitNewSpeed() {
+  CurSpeed += SpeedIncrement;
+  int spd = (CurSpeed >> 5); // (7 - 2 )
+  Move(spd);
+};

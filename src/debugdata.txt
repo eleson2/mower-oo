@@ -1,0 +1,55 @@
+SetCurMotion:  4        
+Moves task CB  605      
+Set_T_S: 400 -400 605 9 
+SpeedIncr: -44   Iter: 9
+SpeedIncr: 44   Iter: 9 
+DriveUnit OnEnable:     
+currMove->mSec
+605
+705
+EmitTargetSpeed:
+Moves task CB  705
+Set_T_S: -100 -400 705 11
+SpeedIncr: -30   Iter: 11
+SpeedIncr: 76   Iter: 11
+DriveUnit OnEnable:
+currMove->mSec
+705
+805
+EmitTargetSpeed:
+Moves task CB  805
+Set_T_S: 700 600 805 12
+SpeedIncr: -125   Iter: 12
+SpeedIncr: 62   Iter: 12
+DriveUnit OnEnable:
+currMove->mSec
+805
+905
+EmitTargetSpeed:
+Moves task CB  905
+Set_T_S: 900 900 905 14
+SpeedIncr: -237   Iter: 14
+SpeedIncr: 89   Iter: 14
+DriveUnit OnEnable:
+currMove->mSec
+905
+0
+EmitTargetSpeed:
+Moves task CB  0
+EOF current move, going continous
+Set_T_S: 900 900 1001 15
+SpeedIncr: -458   Iter: 15
+SpeedIncr: 172   Iter: 15
+DriveUnit OnEnable:
+currMove->mSec
+1001
+20001
+EmitTargetSpeed:
+Moves task CB  20001
+Set_T_S: 900 900 20001 312
+SpeedIncr: -45   Iter: 312
+SpeedIncr: 17   Iter: 312
+DriveUnit OnEnable:
+currMove->mSec
+20001
+0

@@ -1,0 +1,9 @@
+
+class  mHelper {
+   public:
+      void SetTargetSpeed (int LSpeed, int RSpeed, int mSec);
+      void InitHelper(int SchedTicks);
+
+   private:
+      int _schedticks=0;
+};

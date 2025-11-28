@@ -1,0 +1,22 @@
+#ifndef DRIVEUNIT_H
+#define DRIVEUNIT_H
+
+#include <Wheel.h>
+
+class DriveUnit : public Task {
+
+private:
+   Wheel _leftWheel;
+   Wheel _rightWheel;
+
+public:
+   DriveUnit(Scheduler* aS, unsigned int mSec);
+   ~DriveUnit();
+
+   void setTargetSpeed(int leftSpeed, int rightSpeed, int mSecToReachSpeed);
+
+   bool Callback() override;    // Emits new speed to wheels.
+   bool OnEnable() override;    // Emits new speed to wheels.
+   void OnDisable() override;   // Emits end/target speed to wheels.
+};
+#endif

@@ -1,0 +1,135 @@
+Compiling .pio\build\uno\FrameworkArduino\main.cpp.o
+Compiling .pio\build\uno\FrameworkArduino\new.cpp.o
+Compiling .pio\build\uno\FrameworkArduino\wiring.c.o
+Compiling .pio\build\uno\FrameworkArduino\wiring_analog.c.o
+Compiling .pio\build\uno\FrameworkArduino\wiring_digital.c.o
+Compiling .pio\build\uno\FrameworkArduino\wiring_pulse.S.o
+Compiling .pio\build\uno\FrameworkArduino\wiring_pulse.c.o
+Compiling .pio\build\uno\FrameworkArduino\wiring_shift.c.o
+Archiving .pio\build\uno\libFrameworkArduino.a
+Linking .pio\build\uno\firmware.elf
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::OnEnable()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::OnDisable()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::isEnabled()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::getInterval()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::getIterations()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::getRunCounter()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::reset()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::setIterations(long)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::enable()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::enableIfNot()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::delay(unsigned long)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::enableDelayed(unsigned long)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::adjust(long)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::forceNextIteration()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::setInterval(unsigned long)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::set(unsigned long, long)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::disable()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::abort()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::cancel()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::canceled()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::restart()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::restartDelayed(unsigned long)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::isFirstIteration()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::isLastIteration()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::init()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::Scheduler()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::Scheduler()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::addTask(Task&)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::Task(unsigned long, long, Scheduler*, bool)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::Task(unsigned long, long, Scheduler*, bool)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::deleteTask(Task&)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::~Task()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::~Task()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Task::~Task()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::disableAll()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::enableAll()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::startNow()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::timeUntilNextIteration(Task&)'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::currentTask()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::getCurrentTask()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+.pio\build\uno\src\main.cpp.o (symbol from plugin): In function `Task::OnEnable()':
+(.text+0x0): multiple definition of `Scheduler::execute()'
+.pio\build\uno\src\LineFollower.cpp.o (symbol from plugin):(.text+0x0): first defined here
+collect2.exe: error: ld returned 1 exit status
+*** [.pio\build\uno\firmware.elf] Error 1

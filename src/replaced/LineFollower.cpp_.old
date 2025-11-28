@@ -1,0 +1,235 @@
+#include "LineFollower.h"
+
+// Constructor
+LineFollower::LineFollower(Scheduler* aS, GPSInterface* gps, IMUInterface* imu, DriveUnit* drive)
+    : Task(200, TASK_FOREVER, aS, false),  // 200ms update rate, disabled initially
+      _lineSet(false),
+      _gps(gps),
+      _imu(imu),
+      _drive(drive),
+      _K_crossTrack(1.0f),        // Default: moderate correction
+      _K_heading(2.0f),            // Default: prioritize heading alignment
+      _lookaheadDistance(1.0f),    // Default: 1 meter lookahead
+      _baseSpeed(Speed50),         // Default: 50% speed
+      _completionThreshold(0.3f),  // Default: 30cm completion threshold
+      _lineComplete(false)
+{
+}
+
+// Destructor
+LineFollower::~LineFollower() {
+}
+
+// Set the line to follow
+void LineFollower::setLine(Point2D start, Point2D end) {
+    _startPoint = start;
+    _endPoint = end;
+    _lineSet = true;
+    _lineComplete = false;
+}
+
+// Reset state
+void LineFollower::reset() {
+    _lineComplete = false;
+}
+
+// Update sensors (read GPS and gyro)
+void LineFollower::updateSensors() {
+    if (_gps && _gps->hasFix()) {
+        _currentPosition = _gps->getPosition();
+    }
+
+    if (_imu && _imu->isInitialized()) {
+        _currentHeading = _imu->getHeading();
+    }
+}
+
+// Normalize angle to ±180 degrees
+float LineFollower::normalizeAngle(float angle) {
+    while (angle > 180.0f) angle -= 360.0f;
+    while (angle < -180.0f) angle += 360.0f;
+    return angle;
+}
+
+// Calculate bearing from one point to another (returns degrees)
+float LineFollower::calculateBearing(const Point2D& from, const Point2D& to) {
+    float dx = to.x - from.x;
+    float dy = to.y - from.y;
+
+    // atan2 returns radians, convert to degrees
+    // atan2(y, x) gives angle from positive x-axis
+    float bearing = atan2(dy, dx) * RAD_TO_DEG;
+
+    // Convert to compass bearing (0=North=+Y, 90=East=+X)
+    bearing = 90.0f - bearing;
+
+    // Normalize to 0-360
+    while (bearing >= 360.0f) bearing -= 360.0f;
+    while (bearing < 0.0f) bearing += 360.0f;
+
+    return bearing;
+}
+
+// Calculate nearest point on line segment
+Point2D LineFollower::calculateNearestPointOnLine() {
+    // Vector from start to end of line
+    Point2D lineVector = _endPoint - _startPoint;
+
+    // Vector from start to current position
+    Point2D posVector = _currentPosition - _startPoint;
+
+    // Project position onto line (parametric t)
+    float lineLengthSquared = lineVector.dot(lineVector);
+
+    if (lineLengthSquared < 0.0001f) {
+        // Line is essentially a point
+        return _startPoint;
+    }
+
+    float t = posVector.dot(lineVector) / lineLengthSquared;
+
+    // Clamp to line segment
+    if (t < 0.0f) t = 0.0f;
+    if (t > 1.0f) t = 1.0f;
+
+    // Calculate nearest point
+    Point2D nearestPoint = _startPoint + (lineVector * t);
+
+    return nearestPoint;
+}
+
+// Calculate cross-track error (perpendicular distance from line)
+float LineFollower::calculateCrossTrackError() {
+    if (!_lineSet) return 0.0f;
+
+    // Vector from start to end
+    Point2D lineVector = _endPoint - _startPoint;
+
+    // Vector from start to current position
+    Point2D posVector = _currentPosition - _startPoint;
+
+    // Cross-track error is the cross product divided by line length
+    // Positive = right of line, Negative = left of line
+    float crossTrackError = posVector.cross(lineVector) / lineVector.magnitude();
+
+    return crossTrackError;
+}
+
+// Calculate look-ahead point on the line
+Point2D LineFollower::calculateLookAheadPoint() {
+    // Get nearest point on line
+    Point2D nearestPoint = calculateNearestPointOnLine();
+
+    // Direction vector along line
+    Point2D lineDirection = (_endPoint - _startPoint).normalized();
+
+    // Move ahead by lookahead distance
+    Point2D lookAheadPoint = nearestPoint + (lineDirection * _lookaheadDistance);
+
+    // Don't go past the end point
+    float distToEnd = lookAheadPoint.distanceTo(_endPoint);
+    float nearestToEnd = nearestPoint.distanceTo(_endPoint);
+
+    if (distToEnd > nearestToEnd) {
+        // Lookahead would overshoot, aim for endpoint instead
+        lookAheadPoint = _endPoint;
+    }
+
+    return lookAheadPoint;
+}
+
+// Calculate heading error (difference between desired and current heading)
+float LineFollower::calculateHeadingError() {
+    if (!_lineSet) return 0.0f;
+
+    // Calculate look-ahead point
+    Point2D lookAheadPoint = calculateLookAheadPoint();
+
+    // Desired heading is bearing to look-ahead point
+    float desiredHeading = calculateBearing(_currentPosition, lookAheadPoint);
+
+    // Heading error
+    float headingError = normalizeAngle(desiredHeading - _currentHeading);
+
+    return headingError;
+}
+
+// Calculate distance to end point
+float LineFollower::calculateDistanceToEnd() {
+    return _currentPosition.distanceTo(_endPoint);
+}
+
+// Task enable callback
+bool LineFollower::OnEnable() {
+    if (!_lineSet) {
+        return false;  // Can't enable without a line set
+    }
+
+    _lineComplete = false;
+    updateSensors();
+
+    return true;
+}
+
+// Task disable callback
+void LineFollower::OnDisable() {
+    // Stop the drive unit when disabled
+    if (_drive) {
+        _drive->setTargetSpeed(0, 0, 200);
+    }
+}
+
+// Main control loop callback
+bool LineFollower::Callback() {
+    if (!_lineSet) {
+        return false;  // Stop task
+    }
+
+    // Update sensor readings
+    updateSensors();
+
+    // Check if we've reached the end
+    float distanceToEnd = calculateDistanceToEnd();
+    if (distanceToEnd < _completionThreshold) {
+        _lineComplete = true;
+
+        // Stop motors
+        if (_drive) {
+            _drive->setTargetSpeed(0, 0, 200);
+        }
+
+        return false;  // Stop task - line complete
+    }
+
+    // Calculate errors
+    float crossTrackError = calculateCrossTrackError();
+    float headingError = calculateHeadingError();
+
+    // Calculate steering correction
+    // Positive correction = need to turn right (increase right wheel, decrease left)
+    // Negative correction = need to turn left (increase left wheel, decrease right)
+    float steeringCorrection = (_K_crossTrack * crossTrackError) + (_K_heading * headingError * DEG_TO_RAD);
+
+    // Convert correction to speed differential (scale to reasonable range)
+    // Limit correction to ±50% of max speed to avoid extreme turns
+    float maxCorrection = MaxSpeed * 0.5f;
+    if (steeringCorrection > maxCorrection) steeringCorrection = maxCorrection;
+    if (steeringCorrection < -maxCorrection) steeringCorrection = -maxCorrection;
+
+    // Apply to differential drive
+    wheelSpeed leftSpeed = _baseSpeed - (wheelSpeed)steeringCorrection;
+    wheelSpeed rightSpeed = _baseSpeed + (wheelSpeed)steeringCorrection;
+
+    // Clamp to valid range
+    if (leftSpeed > MaxSpeed) leftSpeed = MaxSpeed;
+    if (leftSpeed < -MaxSpeed) leftSpeed = -MaxSpeed;
+    if (rightSpeed > MaxSpeed) rightSpeed = MaxSpeed;
+    if (rightSpeed < -MaxSpeed) rightSpeed = -MaxSpeed;
+
+    // Send to drive unit
+    if (_drive) {
+        _drive->setTargetSpeed(leftSpeed, rightSpeed, getInterval());
+    }
+
+    return true;  // Continue task
+}

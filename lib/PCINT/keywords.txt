@@ -1,0 +1,4 @@
+PcInt	KEYWORD1
+
+attachInterrupt	KEYWORD2
+detachInterrupt	KEYWORD2

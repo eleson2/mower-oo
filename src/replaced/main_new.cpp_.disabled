@@ -1,0 +1,160 @@
+// pio lib install "paulo-raca/Yet Another Arduino PcInt Library"
+#include "globals.hpp"
+#include <TaskScheduler.h>
+#include <sensorSonar.h>
+#include <queue.h>
+
+// New architecture includes
+#include <GPSInterface.h>
+#include <IMUInterface.h>
+#include <DriveUnit_new.h>
+#include <LineFollower.h>
+#include <allMoves.h>
+#include <PatternController.h>
+#include <LineFollowController.h>
+#include <MotionManager.h>
+
+#include "Serial_mon.h"
+
+unsigned int _distance;
+
+SerialSetup s(115200);
+SonarQueue SonarData;
+
+//Scheduler and Tasks
+Scheduler TS;
+DriveUnit drivingUnit(&TS, WheelUpdateRate);
+sSonar sonarA0(&TS, 25, &SonarData, SONARTRIG, SONARECHO);
+
+// GPS and IMU sensors
+GPSInterface gps;
+IMUInterface imu;
+
+// Callback for movement patterns
+void setMainTargetSpeed(movement m) {
+   drivingUnit.setTargetSpeed(m.leftSpeed, m.rightSpeed, m.mSec);
+};
+
+// Motion control components
+allMovements moves(&TS, setMainTargetSpeed);
+LineFollower lineFollower(&TS, &gps, &imu, &drivingUnit);
+
+// Controllers (wrapping the motion components)
+PatternController patternController(&moves);
+LineFollowController lineFollowController(&lineFollower);
+
+// Motion Manager (state machine)
+MotionManager motionManager(&patternController, &lineFollowController);
+
+void setup() {
+   Serial.begin(115200);
+   Serial.println("Mower Control System Starting...");
+   Serial.println("New Architecture with MotionManager");
+
+   // Initialize sensors
+   gps.begin();
+   imu.begin(true);  // true = enable magnetometer
+   imu.calibrate();  // Calibrate gyro (must be stationary)
+
+   // ===== EXAMPLE 1: Use predefined movement patterns =====
+   Serial.println("\n=== Example 1: Pattern-based motion ===");
+
+   // Set pattern and start via MotionManager
+   patternController.setPattern(CIRCLE);
+   motionManager.switchMode(MOTION_PATTERN);
+
+   // Let it run for a bit, then switch modes
+   // (In real code, you'd switch based on events/conditions)
+
+   // ===== EXAMPLE 2: Use line following =====
+   // Uncomment to test line following mode
+   /*
+   Serial.println("\n=== Example 2: Line following mode ===");
+
+   // Stop pattern mode
+   motionManager.switchMode(MOTION_IDLE);
+
+   // Configure line following
+   lineFollowController.setLine(Point2D(0, 0), Point2D(10, 0));
+   lineFollowController.setCrossTrackGain(1.0f);
+   lineFollowController.setHeadingGain(2.0f);
+   lineFollowController.setLookaheadDistance(1.0f);
+   lineFollowController.setBaseSpeed(Speed50);
+
+   // Set initial position and heading for testing
+   gps.setPositionStub(0, -1.0f);  // Start 1m left of line
+   imu.setHeadingStub(45.0f);      // Facing 45 degrees
+
+   // Start line following
+   motionManager.switchMode(MOTION_LINE_FOLLOWING);
+   */
+
+   Serial.println("\nSetup complete!");
+};
+
+void loop() {
+   // Main task scheduler - handles all periodic tasks
+   TS.execute();
+
+   // Update sensors periodically
+   static unsigned long lastSensorUpdate = 0;
+   if (millis() - lastSensorUpdate > 50) {  // Update at ~20Hz
+      gps.update();
+      imu.update();
+      lastSensorUpdate = millis();
+   }
+
+   // Monitor motion state
+   static unsigned long lastStatusPrint = 0;
+   if (millis() - lastStatusPrint > 2000) {  // Print every 2 seconds
+      Serial.print("Motion State: ");
+
+      switch (motionManager.getCurrentState()) {
+         case MOTION_IDLE:
+            Serial.println("IDLE");
+            break;
+         case MOTION_PATTERN:
+            Serial.print("PATTERN (");
+            Serial.print(patternController.getCurrentPattern());
+            Serial.println(")");
+            break;
+         case MOTION_LINE_FOLLOWING:
+            Serial.print("LINE_FOLLOWING - CTE: ");
+            Serial.print(lineFollowController.getCrossTrackError(), 3);
+            Serial.println("m");
+            break;
+         case MOTION_OBSTACLE_AVOID:
+            Serial.println("OBSTACLE_AVOID");
+            break;
+         case MOTION_EMERGENCY_STOP:
+            Serial.println("EMERGENCY_STOP");
+            break;
+      }
+
+      lastStatusPrint = millis();
+   }
+
+   // ===== Example: Mode switching based on line completion =====
+   /*
+   if (motionManager.getCurrentState() == MOTION_LINE_FOLLOWING) {
+      if (lineFollowController.isComplete()) {
+         Serial.println("Line complete! Switching to pattern mode.");
+         patternController.setPattern(CONTINOUS);
+         motionManager.switchMode(MOTION_PATTERN);
+      }
+   }
+   */
+
+   // ===== Example: Obstacle avoidance integration =====
+   /*
+   if (SonarData.pull(_distance)) {
+      if (_distance < sSonar::MMtoMeasure(150)) {
+         Serial.println("Obstacle detected! Emergency stop.");
+         motionManager.emergencyStop();
+
+         // Could implement obstacle avoidance here
+         // motionManager.switchMode(MOTION_OBSTACLE_AVOID);
+      }
+   }
+   */
+};

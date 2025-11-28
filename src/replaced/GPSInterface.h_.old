@@ -1,0 +1,109 @@
+#ifndef _GPS_INTERFACE_H
+#define _GPS_INTERFACE_H
+
+#include "Arduino.h"
+
+// Simple 2D point structure for GPS coordinates
+struct Point2D {
+    float x;  // Longitude or local X coordinate (meters)
+    float y;  // Latitude or local Y coordinate (meters)
+
+    Point2D() : x(0), y(0) {}
+    Point2D(float _x, float _y) : x(_x), y(_y) {}
+
+    // Calculate distance to another point
+    float distanceTo(const Point2D& other) const {
+        float dx = x - other.x;
+        float dy = y - other.y;
+        return sqrt(dx*dx + dy*dy);
+    }
+
+    // Vector operations
+    Point2D operator-(const Point2D& other) const {
+        return Point2D(x - other.x, y - other.y);
+    }
+
+    Point2D operator+(const Point2D& other) const {
+        return Point2D(x + other.x, y + other.y);
+    }
+
+    Point2D operator*(float scalar) const {
+        return Point2D(x * scalar, y * scalar);
+    }
+
+    // Dot product
+    float dot(const Point2D& other) const {
+        return x * other.x + y * other.y;
+    }
+
+    // Cross product (2D returns scalar)
+    float cross(const Point2D& other) const {
+        return x * other.y - y * other.x;
+    }
+
+    // Magnitude
+    float magnitude() const {
+        return sqrt(x*x + y*y);
+    }
+
+    // Normalize to unit vector
+    Point2D normalized() const {
+        float mag = magnitude();
+        if (mag > 0.0001f) {
+            return Point2D(x/mag, y/mag);
+        }
+        return Point2D(0, 0);
+    }
+};
+
+// GPS Interface stub - to be replaced with actual GPS implementation
+class GPSInterface {
+private:
+    Point2D _currentPosition;
+    bool _hasFixSimulated;
+
+public:
+    GPSInterface() : _currentPosition(0, 0), _hasFixSimulated(false) {}
+
+    // Initialize GPS module
+    void begin() {
+        // TODO: Initialize actual GPS hardware
+        _hasFixSimulated = false;
+    }
+
+    // Update GPS reading (call periodically)
+    void update() {
+        // TODO: Read from actual GPS module
+        // For now, simulate having a fix after initialization
+        _hasFixSimulated = true;
+    }
+
+    // Check if GPS has valid fix
+    bool hasFix() const {
+        return _hasFixSimulated;
+    }
+
+    // Get current position
+    Point2D getPosition() const {
+        return _currentPosition;
+    }
+
+    // Stub: Set position manually (for testing without real GPS)
+    void setPositionStub(float x, float y) {
+        _currentPosition.x = x;
+        _currentPosition.y = y;
+        _hasFixSimulated = true;
+    }
+
+    // Get number of satellites (stub)
+    int getSatellites() const {
+        return _hasFixSimulated ? 8 : 0;
+    }
+
+    // Get HDOP (horizontal dilution of precision) - stub
+    float getHDOP() const {
+        return _hasFixSimulated ? 1.2f : 99.9f;
+    }
+};
+
+#endif

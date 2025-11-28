@@ -1,0 +1,49 @@
+#include "globals.hpp"
+#include <DriveUnit.h>
+
+DriveUnit::DriveUnit(Scheduler* aS,unsigned int mSec) : 
+   Task(mSec,TASK_FOREVER,aS,false),  
+   _leftWheel(LEFTENABLE,LEFTIN1,LEFTIN2), 
+   _rightWheel(RIGHTENABLE,RIGHTIN1,RIGHTIN2) {
+};
+
+DriveUnit::~DriveUnit() { };
+
+bool DriveUnit::Callback() {
+   _leftWheel.emitNewSpeed();
+   _rightWheel.emitNewSpeed();
+   return true;
+}
+
+bool DriveUnit::OnEnable() {
+   DEBUG_PRINTLN("DriveUnit OnEnable:");
+   _leftWheel.emitNewSpeed();
+   _rightWheel.emitNewSpeed();
+   return true;
+}
+
+void DriveUnit::OnDisable() {
+   DEBUG_PRINTLN("EmitTargetSpeed:");
+   _leftWheel.emitTargetSpeed();
+   _rightWheel.emitTargetSpeed();
+   return;
+}
+
+void DriveUnit::setTargetSpeed(int leftSpeed, int rightSpeed, int mSecToReachSpeed) {
+   int iterations = mSecToReachSpeed / WheelUpdateRate;
+   if (iterations <= 1) iterations = 2;
+
+   DEBUG_PRINT("Set_T_S: ");
+   DEBUG_PRINT(leftSpeed);
+   DEBUG_PRINT(" ");
+   DEBUG_PRINT(rightSpeed);
+   DEBUG_PRINT(" ");
+   DEBUG_PRINT(mSecToReachSpeed);
+   DEBUG_PRINT(" ");
+   DEBUG_PRINTLN(iterations);
+
+   _leftWheel.setWheelSpeed(leftSpeed, iterations);
+   _rightWheel.setWheelSpeed(rightSpeed, iterations);
+   setIterations(iterations);
+   enable();
+}
