@@ -3,7 +3,7 @@
 
 #include "globals.hpp"
 #include "Arduino.h"
-#include "GeometryUtils.h"
+#include "MowerGeometry.h"
 
 // Maximum perimeter waypoints
 #define MAX_PERIMETER_WAYPOINTS 1000
@@ -226,12 +226,12 @@ public:
         for (int i = 0; i < _waypointCount - 1; i++) {
             int32_t dx = _waypoints[i].dx;
             int32_t dy = _waypoints[i].dy;
-            totalLength += GeometryUtils::vectorLength(dx, dy);
+            totalLength += IntegerMath::vectorLength(dx, dy);
         }
 
         // Add closing segment (last to first)
         Point2D_int last = getWaypoint(_waypointCount - 1);
-        totalLength += GeometryUtils::distanceBetweenPoints(last, _origin);
+        totalLength += MowerGeometry::distanceBetweenPoints(last, _origin);
 
         return totalLength;
     }
@@ -271,7 +271,7 @@ public:
         for (int i = 1; i < _waypointCount; i++) {
             Point2D_int curr = getWaypoint(i);
 
-            int32_t dist = GeometryUtils::distanceToLineSegment(point, prev, curr);
+            int32_t dist = MowerGeometry::distanceToLineSegment(point, prev, curr);
 
             if (dist <= threshold_mm) {
                 return true;
@@ -281,7 +281,7 @@ public:
         }
 
         // Check closing segment
-        int32_t dist = GeometryUtils::distanceToLineSegment(point, prev, _origin);
+        int32_t dist = MowerGeometry::distanceToLineSegment(point, prev, _origin);
         return dist <= threshold_mm;
     }
 };

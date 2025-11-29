@@ -4,7 +4,7 @@
 #include "globals.hpp"
 #include "GPSInterface.h"
 #include "IMUInterface.h"
-#include "IntegerMath.h"
+#include "IntegerMathDefault.h"
 #include "DriveUnit.h"
 #include <TaskSchedulerDeclarations.h>
 

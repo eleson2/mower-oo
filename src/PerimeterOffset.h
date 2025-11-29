@@ -4,8 +4,8 @@
 #include "globals.hpp"
 #include "Arduino.h"
 #include "PerimeterStorage.h"
-#include "IntegerMath.h"
-#include "GeometryUtils.h"
+#include "IntegerMathDefault.h"
+#include "MowerGeometry.h"
 
 // Maximum waypoints in offset perimeter
 #define MAX_OFFSET_WAYPOINTS 1000
@@ -126,15 +126,15 @@ private:
         int32_t perp1x, perp1y;
         int32_t perp2x, perp2y;
 
-        GeometryUtils::getPerpendicular(v1x, v1y, true, perp1x, perp1y);
-        GeometryUtils::getPerpendicular(v2x, v2y, false, perp2x, perp2y);
+        MowerGeometry::getPerpendicular(v1x, v1y, true, perp1x, perp1y);
+        MowerGeometry::getPerpendicular(v2x, v2y, false, perp2x, perp2y);
 
         // Normalize perpendiculars (scaled by 1000)
         int32_t norm1x, norm1y;
         int32_t norm2x, norm2y;
 
-        GeometryUtils::normalizeVector(perp1x, perp1y, norm1x, norm1y);
-        GeometryUtils::normalizeVector(perp2x, perp2y, norm2x, norm2y);
+        IntegerMath::normalizeVector(perp1x, perp1y, norm1x, norm1y);
+        IntegerMath::normalizeVector(perp2x, perp2y, norm2x, norm2y);
 
         // Bisector = average of two perpendiculars
         int32_t bisectorX = (norm1x + norm2x) / 2;
@@ -142,14 +142,14 @@ private:
 
         // Normalize bisector
         int32_t normBisectorX, normBisectorY;
-        GeometryUtils::normalizeVector(bisectorX, bisectorY, normBisectorX, normBisectorY);
+        IntegerMath::normalizeVector(bisectorX, bisectorY, normBisectorX, normBisectorY);
 
         // Calculate angle between edges to determine offset scaling
         // For sharp corners, we need to extend the offset
         // offset_scaled = offset / cos(angle/2)
 
         // Dot product of normalized perpendiculars
-        int32_t dot = GeometryUtils::dotProduct(norm1x, norm1y, norm2x, norm2y);
+        int32_t dot = IntegerMath::dotProduct(norm1x, norm1y, norm2x, norm2y);
 
         // cos(angle/2) ≈ sqrt((1 + cos(angle))/2)
         // For simplicity, use a scaling factor based on dot product
@@ -159,7 +159,7 @@ private:
         int32_t scale = 1000;
         if (dot > 0) {
             // cos(angle/2) ≈ sqrt((1000 + dotProduct)/2000) * 1000
-            int32_t cosHalfAngle = GeometryUtils::integerSqrt(((1000 + dot) * 1000) / 2);
+            int32_t cosHalfAngle = IntegerMath::integerSqrt(((1000 + dot) * 1000) / 2);
             if (cosHalfAngle > 100) {  // Avoid division by very small numbers
                 scale = (1000 * 1000) / cosHalfAngle;
             } else {

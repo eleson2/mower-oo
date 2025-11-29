@@ -6,6 +6,7 @@
 #include "Arduino.h"
 #include <TaskSchedulerDeclarations.h>
 #include <queue.h>
+#include "MowerTypes.h"
 
 // Debug output control
 // Set to 0 to disable all debug output, 1 to enable
@@ -41,27 +42,9 @@ typedef struct {
    int mSec;
 } const movement;
 
-// Integer-only units for sensors (no floats!)
-typedef int16_t angle_t;      // Angle in tenths of degrees (0-3599 = 0.0° to 359.9°)
-typedef int32_t distance_t;   // Distance in millimeters
-typedef uint32_t time_ms_t;   // Time in milliseconds
-
-// Angle constants
-constexpr angle_t ANGLE_0   = 0;
-constexpr angle_t ANGLE_90  = 900;   // 90.0 degrees = 900 tenths
-constexpr angle_t ANGLE_180 = 1800;  // 180.0 degrees = 1800 tenths
-constexpr angle_t ANGLE_270 = 2700;  // 270.0 degrees = 2700 tenths
-constexpr angle_t ANGLE_360 = 3600;  // 360.0 degrees = 3600 tenths
-
-// Helper macros for angle conversion
-#define DEGREES_TO_ANGLE(deg) ((angle_t)((deg) * 10))
-#define ANGLE_TO_DEGREES(ang) ((ang) / 10)
+// Additional angle conversion macros (radians, kept in globals for Arduino compatibility)
 #define RADIANS_TO_ANGLE(rad) ((angle_t)((rad) * 1800 / PI))  // rad * 180/PI * 10
 #define ANGLE_TO_RADIANS(ang) ((ang) * PI / 1800)  // ang / 10 * PI/180
-
-// Helper macros for distance conversion
-#define METERS_TO_MM(m) ((distance_t)((m) * 1000))
-#define MM_TO_METERS(mm) ((mm) / 1000)
 
 typedef void (*motorSpeedCallback)(movement m);
 

@@ -6,7 +6,7 @@
 #include "GPSInterface.h"
 #include "IMUInterface.h"
 #include "LineFollower.h"
-#include "IntegerMath.h"
+#include "IntegerMathDefault.h"
 #include "PerimeterStorage.h"
 #include "PerimeterOffset.h"
 

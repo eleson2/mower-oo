@@ -1,0 +1,6 @@
+{
+  "name": "IntegerMath",
+  "version": "0.1.0",
+  "keywords": ["integer","trig","math","fixed"],
+  "build": { "flags": ["-std=gnu++17"] }
+}

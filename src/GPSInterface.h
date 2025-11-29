@@ -3,87 +3,9 @@
 
 #include "globals.hpp"
 #include "Arduino.h"
-
-// Simple 2D point structure for GPS coordinates
-// INTEGER ONLY - distances in millimeters!
-struct Point2D_int {
-    distance_t x;  // X coordinate in millimeters
-    distance_t y;  // Y coordinate in millimeters
-
-    Point2D_int() : x(0), y(0) {}
-    Point2D_int(distance_t _x, distance_t _y) : x(_x), y(_y) {}
-
-    // Calculate distance to another point (returns mm)
-    distance_t distanceTo(const Point2D_int& other) const {
-        int32_t dx = x - other.x;
-        int32_t dy = y - other.y;
-
-        // Integer square root approximation
-        // sqrt(dx² + dy²)
-        int64_t distSquared = (int64_t)dx * dx + (int64_t)dy * dy;
-        return isqrt64(distSquared);
-    }
-
-    // Vector operations
-    Point2D_int operator-(const Point2D_int& other) const {
-        return Point2D_int(x - other.x, y - other.y);
-    }
-
-    Point2D_int operator+(const Point2D_int& other) const {
-        return Point2D_int(x + other.x, y + other.y);
-    }
-
-    Point2D_int operator*(int32_t scalar) const {
-        return Point2D_int((x * scalar), (y * scalar));
-    }
-
-    Point2D_int operator/(int32_t scalar) const {
-        return Point2D_int(x / scalar, y / scalar);
-    }
-
-    // Dot product
-    int64_t dot(const Point2D_int& other) const {
-        return (int64_t)x * other.x + (int64_t)y * other.y;
-    }
-
-    // Cross product (2D returns scalar)
-    int64_t cross(const Point2D_int& other) const {
-        return (int64_t)x * other.y - (int64_t)y * other.x;
-    }
-
-    // Magnitude (in mm)
-    distance_t magnitude() const {
-        int64_t magSquared = (int64_t)x * x + (int64_t)y * y;
-        return isqrt64(magSquared);
-    }
-
-    // Normalize to unit vector (scaled by 1000 for precision)
-    // Returns vector scaled so magnitude = 1000
-    Point2D_int normalized() const {
-        distance_t mag = magnitude();
-        if (mag > 10) {  // Avoid division by very small numbers
-            return Point2D_int((x * 1000) / mag, (y * 1000) / mag);
-        }
-        return Point2D_int(0, 0);
-    }
-
-private:
-    // Integer square root using Newton's method
-    // Fast approximation for 64-bit integers
-    static distance_t isqrt64(int64_t n) {
-        if (n <= 0) return 0;
-        if (n == 1) return 1;
-
-        int64_t x = n;
-        int64_t y = (x + 1) / 2;
-
-        while (y < x) {
-            x = y;
-            y = (x + n / x) / 2;
-        }
-        return (distance_t)x;
-    }
-};
+#include "MowerTypes.h"
+#include "MowerGeometry.h"
+#include "IntegerMathUtils.h"
 
 // GPS Interface stub - to be replaced with actual GPS implementation
 // INTEGER ONLY - positions in millimeters!
